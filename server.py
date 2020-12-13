@@ -1,23 +1,25 @@
 import json
 import re
 from flask import Flask, Response, request, abort
+from database import *
 
 app = Flask(__name__)
 wordCounter = {}
 
 def add_one_word(word, old = None, new = None):
-
-    if wordCounter.get(word):
-        wordCounter[word] += 1
-        if old != None:
-            old +=1
-
-    else:
-        wordCounter[word] = 1
-        if new != None:
-            new +=1
-
-    return old,new
+    return add(word, old ,new)
+    #
+    # if wordCounter.get(word):
+    #     wordCounter[word] += 1
+    #     if old != None:
+    #         old +=1
+    #
+    # else:
+    #     wordCounter[word] = 1
+    #     if new != None:
+    #         new +=1
+    #
+    # return old,new
 
 
 @app.route('/sanity', methods=["GET"])
@@ -89,6 +91,24 @@ def get_top_five():
     first5pairs = {k: top_vals[k] for k in list(top_vals)[:5]}
 
     return json.dumps({"rank": first5pairs})
+
+@app.route('/delete/<word>', methods=["DELETE"])
+def delete_word(word):
+    temp = None
+    if wordCounter.get(word) !=None:
+        temp = wordCounter[word]
+        del wordCounter[word]
+        return json.dumps({"deleted": word})
+
+    else:
+        abort(404)
+
+
+@app.route('/update/<neword>', methods=["PUT"])
+def update_word(neword):
+    wordCounter[neword] = wordCounter.pop(neword)
+
+
 
 if __name__ == '__main__':
     app.run(port=4000)
